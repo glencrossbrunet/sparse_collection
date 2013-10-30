@@ -5,12 +5,12 @@ describe Resource do
     let(:resources) { Resource.all }
     
     describe 'defaults to created_at' do
-      subject { resources.sparse.sparse_attribute }
+      subject { resources.sparse.attribute }
       it { should eq(:created_at) }
     end
     
     describe 'with field' do
-      subject { resources.sparse(:recorded_at).sparse_attribute }
+      subject { resources.sparse(:recorded_at).attribute }
       it { should eq(:recorded_at) }
     end
   end
