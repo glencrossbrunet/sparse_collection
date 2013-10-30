@@ -10,6 +10,8 @@ ActiveRecord::Migration.class_eval do
   drop_table :resources
   
   create_table :resources do |t|
+    t.date :recorded_on
+    t.datetime :recorded_at
     t.float :float_value
     t.integer :int_value
     t.timestamps
