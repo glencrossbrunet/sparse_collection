@@ -13,44 +13,37 @@ module SparseDatetime
   end
   
   class Collection
-    attr_accessor :resources, :attribute
+    attr_accessor :resources, :attribute, :period_start, :period_end
     
     def initialize(resources, attribute)
       self.resources = resources
       self.attribute = attribute
+      if resources.any?
+        starting resources.first[attribute]
+        ending resources.last[attribute]
+      end
     end
     
-    def self.avg(datetime_range)
-      samples = where(sampled_at: datetime_range).order('sampled_at ASC')
+    def starting(datetime)
+      self.period_start = datetime
+    end
+    alias_method :beginning, :starting
     
-      if samples.any?
-        total_seconds = datetime_range.end.to_i - samples.first.sampled_at.to_i    
-        average = 0.0
-    
-        samples.each_cons(2) do |start, stop|
-          seconds = stop.sampled_at.to_i - start.sampled_at.to_i
-          average += (seconds.to_f / total_seconds) * start.value
-        end
-
-        seconds = datetime_range.end.to_i - samples.last.sampled_at.to_i
-        average += (seconds.to_f / total_seconds) * samples.last.value
-    
-        average
-      else
-        nil
-      end
+    def ending(datetime)
+      self.period_end = datetime
     end
     
     def riemann_left(field)
       return nil unless resources.any?
       
-      period = (resources.last[attribute] - resources.first[attribute]).to_f
       total = 0.0
       
-      resources.each_cons(2).map do |previous, current|
-        sub_period = (current[attribute] - previous[attribute]).to_f
-        total += previous[field] * sub_period
+      total += each_pair do |left, right, sub_period|
+        left[field] * sub_period
       end
+      
+      last = resources.last
+      total += (period_end - last[attribute]).to_f * last[field]
       
       total / period
     end
@@ -58,12 +51,13 @@ module SparseDatetime
     def riemann_right(field)
       return nil unless resources.any?
       
-      period = (resources.last[attribute] - resources.first[attribute]).to_f
       total = 0.0
       
-      resources.each_cons(2).map do |previous, current|
-        sub_period = (current[attribute] - previous[attribute]).to_f
-        total += current[field] * sub_period
+      first = resources.first
+      total += (first[attribute] - period_start).to_f * first[field]
+      
+      total += each_pair do |left, right, sub_period|
+        right[field] * sub_period
       end
       
       total / period
@@ -72,16 +66,24 @@ module SparseDatetime
     def riemann_middle(field)
       return nil unless resources.any?
       
-      period = (resources.last[attribute] - resources.first[attribute]).to_f
       total = 0.0
-            
-      resources.each_cons(2).map do |previous, current|
-        sub_period = (current[attribute] - previous[attribute]).to_f
-        multiplier = sub_period / 2
-        total += multiplier * (previous[field] + current[field])
+      
+      total += each_pair do |left, right, sub_period|
+        (sub_period / 2) * (left[field] + right[field])
       end
       
       total / period
+    end
+    
+    def each_pair
+      resources.each_cons(2).reduce(0.0) do |sum, pair|
+        period = (pair.last[attribute] - pair.first[attribute]).to_f
+        sum + yield(*pair, period)
+      end
+    end
+    
+    def period
+      (period_end - period_start).to_f
     end
     
   end
