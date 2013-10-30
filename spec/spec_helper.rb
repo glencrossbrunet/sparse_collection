@@ -11,15 +11,13 @@ ActiveRecord::Migration.class_eval do
   
   create_table :resources do |t|
     t.date :recorded_on
-    t.datetime :recorded_at
-    t.float :float_value
-    t.integer :int_value
+    t.integer :value
     t.timestamps
   end
 end
 
 class Resource < ActiveRecord::Base
-  include SparseCollection
+  extend SparseCollection
 end
 
 RSpec.configure do |config|

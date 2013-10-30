@@ -87,7 +87,9 @@ module SparseCollection
     end
     
     def find_middle(datetime)
-      
+      [ find_right(datetime), find_left(datetime) ].compact.min_by do |resource|
+        (resource[attribute] - datetime).abs
+      end
     end
     
     def find_right(datetime)
