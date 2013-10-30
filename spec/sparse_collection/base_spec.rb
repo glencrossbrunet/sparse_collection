@@ -5,7 +5,7 @@ describe Resource do
   
   describe '#sparse' do
     subject { collection }
-    it { should be_a(SparseDatetime::Collection) }
+    it { should be_a(SparseCollection::Collection) }
   end
   
   describe '#starting | #beginning' do

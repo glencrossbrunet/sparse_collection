@@ -1,7 +1,7 @@
 require 'rubygems'
 require 'bundler/setup'
 require 'active_record'
-require 'sparse_datetime'
+require 'sparse_collection'
 
 ActiveRecord::Base.establish_connection adapter: 'sqlite3', 
   database: 'spec/testdb.sqlite'
@@ -19,7 +19,7 @@ ActiveRecord::Migration.class_eval do
 end
 
 class Resource < ActiveRecord::Base
-  include SparseDatetime
+  include SparseCollection
 end
 
 RSpec.configure do |config|

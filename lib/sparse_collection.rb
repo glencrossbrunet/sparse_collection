@@ -1,7 +1,7 @@
 require 'active_support/concern'
-require 'sparse_datetime/collection'
+require 'sparse_collection/collection'
 
-module SparseDatetime
+module SparseCollection
   extend ActiveSupport::Concern
 
   module ClassMethods
@@ -9,7 +9,7 @@ module SparseDatetime
     
     def sparse(attribute = :created_at)
       resources = where.not(attribute => nil).order("#{attribute} ASC")
-      Collection.new resources, attribute
+      ::SparseCollection::Collection.new resources, attribute
     end
   end
 end
