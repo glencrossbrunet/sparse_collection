@@ -28,6 +28,7 @@ module SparseCollection
     
     def average_left(field)
       return nil unless resources.any?
+      return resources.first[field] if period_duration.zero?
       
       total = 0.0
       
@@ -43,6 +44,7 @@ module SparseCollection
     
     def average_right(field)
       return nil unless resources.any?
+      return resources.last[field] if period_duration.zero?
       
       total = 0.0
       
@@ -58,6 +60,7 @@ module SparseCollection
     
     def average_middle(field)
       return nil unless resources.any?
+      return resources.average(field) if period_duration.zero?
       
       total = 0.0
       

@@ -102,5 +102,14 @@ describe SparseCollection::Collection do
       sum = (0 * 0) + (1 * 5) + (2 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
+    
+    describe 'over 0 length range' do
+      let(:sparse) { resources.where(recorded_on: Date.parse('Jan 3, 2013')).sparse(:recorded_on) }
+      [ :left, :right, :middle ].each do |type|
+        specify "#average_#{type}" do
+          expect(sparse.send("average_#{type}", :value)).to be_within(delta).of(5.0)
+        end
+      end
+    end
   end
 end
