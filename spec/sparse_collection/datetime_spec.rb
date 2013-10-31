@@ -26,6 +26,12 @@ describe 'Collection with datetimes' do
     sum = (1 * 0) + (2 * 5) + (0 * 10)
     it { should be_within(delta).of(sum / 3.0) }
   end
+    
+  describe 'ending' do
+    subject { sparse.ending(DateTime.new(2013, 1, 1, 6)).average_left(:value) }
+    sum = (1 * 0) + (2 * 5) + (1 * 10)
+    it { should be_within(delta).of(sum / 4.0) }
+  end
   
   describe '#average_middle' do
     subject { sparse.average_middle(:value) }
@@ -37,5 +43,11 @@ describe 'Collection with datetimes' do
     subject { sparse.average_right(:value) }
     sum = (0 * 0) + (1 * 5) + (2 * 10)
     it { should be_within(delta).of(sum / 3.0) }
+  end
+  
+  describe 'starting' do
+    subject { sparse.starting(DateTime.new(2013, 1, 1, 1)).average_right(:value) }
+    sum = (1 * 0) + (1 * 5) + (2 * 10)
+    it { should be_within(delta).of(sum / 4.0) }
   end
 end

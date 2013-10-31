@@ -90,7 +90,7 @@ describe SparseCollection::Collection do
       sum = (1 * 0) + (2 * 5) + (0 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
-    
+
     describe '_middle' do
       subject { sparse.average_middle(:value) }
       sum = (0.5 * 0) + (0.5 * 5) + (1 * 5) + (1 * 10)
