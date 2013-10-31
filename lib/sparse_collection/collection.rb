@@ -13,11 +13,13 @@ module SparseCollection
     
     def starting(datetime)
       self.period_start = datetime
+      self
     end
     alias_method :beginning, :starting
     
     def ending(datetime)
       self.period_end = datetime
+      self
     end
     
     

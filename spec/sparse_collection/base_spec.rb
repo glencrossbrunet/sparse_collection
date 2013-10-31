@@ -8,19 +8,25 @@ describe Resource do
     it { should be_a(SparseCollection::Collection) }
   end
   
+  let(:date) { Date.today }
+  
   describe '#starting | #beginning' do
-    date = Date.today
-    before { collection.beginning(date) }
+    subject { collection.beginning(date) }
+    
+    it { should be_a(SparseCollection::Collection) }
+    
     it 'should save the begin value' do
-      expect(collection.period_start).to eq(date)
+      expect(subject.period_start).to eq(date)
     end
   end
   
   describe '#ending' do
-    date = Date.today
-    before { collection.ending(date) }
+    subject { collection.ending(date) }
+    
+    it { should be_a(SparseCollection::Collection) }
+    
     it 'should save the ending value' do
-      expect(collection.period_end).to eq(date)
+      expect(subject.period_end).to eq(date)
     end
   end
 end
