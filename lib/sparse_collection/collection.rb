@@ -82,8 +82,10 @@ module SparseCollection
     
     
     
-    def find_left(datetime)
-      resources.where("#{attribute} <= ?", datetime).order("#{attribute} DESC").limit(1).first
+    def find_left(datetime = nil)
+      collection = resources
+      collection = collection.where("#{attribute} <= ?", datetime) if datetime
+      collection.order("#{attribute} DESC").limit(1).first
     end
     
     def find_middle(datetime)
@@ -92,8 +94,10 @@ module SparseCollection
       end
     end
     
-    def find_right(datetime)
-      resources.where("#{attribute} >= ?", datetime).order("#{attribute} ASC").limit(1).first
+    def find_right(datetime = nil)
+      collection = resources
+      collection = collection.where("#{attribute} >= ?", datetime) if datetime
+      collection.order("#{attribute} ASC").limit(1).first
     end
     
   end

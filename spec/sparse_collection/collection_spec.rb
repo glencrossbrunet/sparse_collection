@@ -20,6 +20,11 @@ describe SparseCollection::Collection do
     describe '_left' do
       subject { sparse.find_left(date).try(:value) }
       
+      describe 'defaults to most recent' do
+        let(:date) { nil }
+        it { should eq(10) }
+      end
+      
       describe 'no value' do
         let(:date) { Date.parse('Jan 1, 2013') }
         it { should be_nil }
@@ -75,7 +80,7 @@ describe SparseCollection::Collection do
     end
   end
   
-  describe '#riemann' do    
+  describe '#average' do    
     let(:delta) do
       0.00000001
     end
