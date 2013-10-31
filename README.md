@@ -1,6 +1,6 @@
 # sparse_collection
 
-One of the things we do At **Glencross Brunet** is monitor energy consumers in real-time. Instead of saving information at a constant sample rate, we only save new records when the values change. This saves space, but means traditional averages aren't applicable. 
+One of the things we do at **Glencross Brunet** is monitor energy consumers in real-time. Instead of saving information at a constant sample rate, we only save new records when the values change. This saves space, but means traditional averages aren't applicable. 
 
 The module uses Riemann sum terminology (`left`, `middle`, `right`) with the sample time as the independent variable. You'll see more clearly with the examples below!
 
@@ -89,6 +89,28 @@ sparse_samples.find_middle(jan_3_2013)
 sparse_samples.find_right(jan_3_2013)
 # => { id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
 ```
+
+### Indexing
+
+Sparse averages and finds depend on ordering by your datetime field. Make sure that it is indexed! You can create a migration to index it with:
+
+```
+$ rails g migration add_index_to_tablename_fieldname
+```
+
+And in the migration file:
+
+```
+class AddIndexToTablenameFieldname < ActiveRecord::Migration
+  def change
+    add_index :tablename, :fieldname   # maybe add null: false, unique: true
+  end
+end
+```
+
+### License
+
+MIT
 
 ---
 

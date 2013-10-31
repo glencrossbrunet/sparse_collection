@@ -1,3 +1,4 @@
+require 'sparse_collection/version'
 require 'sparse_collection/collection'
 
 module SparseCollection
