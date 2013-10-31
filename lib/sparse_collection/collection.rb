@@ -36,7 +36,7 @@ module SparseCollection
       end
       
       last = resources.last
-      total += (period_end - last[attribute]).to_f * last[field]
+      total += period_between(period_end, last[attribute]) * last[field]
       
       total / period_duration
     end
@@ -47,7 +47,7 @@ module SparseCollection
       total = 0.0
       
       first = resources.first
-      total += (first[attribute] - period_start).to_f * first[field]
+      total += period_between(first[attribute], period_start) * first[field]
       
       total += each_pair do |left, right, sub_period|
         right[field] * sub_period
@@ -70,13 +70,17 @@ module SparseCollection
     
     def each_pair
       resources.each_cons(2).reduce(0.0) do |sum, pair|
-        period = (pair.last[attribute] - pair.first[attribute]).to_f
-        sum + yield(*pair, period)
+        sub_period = period_between pair.first[attribute], pair.last[attribute]
+        sum + yield(*pair, sub_period)
       end
     end
     
     def period_duration
-      (period_end - period_start).to_f
+      period_between(period_start, period_end)
+    end
+    
+    def period_between(left, right)
+      (right - left).to_f
     end
     
     
@@ -92,7 +96,7 @@ module SparseCollection
     
     def find_middle(datetime)
       [ find_right(datetime), find_left(datetime) ].compact.min_by do |resource|
-        (resource[attribute] - datetime).abs
+        period_between(resource[attribute], datetime).abs
       end
     end
     

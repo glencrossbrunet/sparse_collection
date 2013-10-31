@@ -11,6 +11,7 @@ ActiveRecord::Migration.class_eval do
   
   create_table :resources do |t|
     t.date :recorded_on
+    t.datetime :recorded_at
     t.integer :value
     t.timestamps
   end
