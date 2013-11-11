@@ -10,7 +10,7 @@ describe 'Collection with datetimes' do
       # 2 day gap
       { recorded_at: DateTime.new(2013, 1, 1, 5), value: 10 }
     ].map { |attributes| Resource.create(attributes) }
-    Resource.where(id: resources.map(&:id))
+    Resource.where(id: resources.shuffle.map(&:id))
   end
     
   let(:sparse) do

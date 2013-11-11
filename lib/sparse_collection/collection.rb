@@ -90,7 +90,6 @@ module SparseCollection
     # find
     
     
-    
     def find_left(datetime = nil)
       collection = resources
       collection = collection.where("#{attribute} <= ?", datetime) if datetime
@@ -108,6 +107,46 @@ module SparseCollection
       collection = collection.where("#{attribute} >= ?", datetime) if datetime
       collection.order("#{attribute} ASC").limit(1).first
     end
+		
+		
+		# prune
+		
+		
+		def prune_left(field, delta = nil)
+			precedent = nil
+			resources.each_cons(2) do |left, right|
+				precedent = left if left.persisted?
+				right.destroy if prune? precedent[field], right[field], delta
+			end
+			resources.reload
+		end
+		
+		def prune_middle(field, delta = nil)
+			precedent = nil
+			resources.each_cons(3) do |left, middle, right|
+				precedent = left if left.persisted?
+				values = [ precedent, middle, right ].map{ |record| record[field]  }
+				middle.destroy if values.combination(2).all?{ |a, b| prune? a, b, delta }
+			end
+			resources.reload
+		end
+		
+		def prune_right(field, delta = nil)
+			precedent = nil
+			resources.reverse_each.each_cons(2) do |right, left|
+				precedent = right if right.persisted?
+				left.destroy if prune? precedent[field], left[field], delta
+			end
+			resources.reload
+		end
+		
+		def prune?(precedent_value, incident_value, delta = nil)
+			if delta.nil?
+				precedent_value == incident_value
+			else
+				(precedent_value - incident_value).abs <= delta
+			end
+		end
     
   end
 end
