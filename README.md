@@ -90,6 +90,56 @@ sparse_samples.find_right(jan_3_2013)
 # => { id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
 ```
 
+### Pruning Redundant Records
+
+There's a bunch of redundant records in the database. How can I permanently delete them? If you had the following Sample records:
+
+```
+{ id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+{ id: 2, value: 5.00, saved_at: <Date: 'Jan 3, 2013'> }
+{ id: 3, value: 5.02, saved_at: <Date: 'Jan 4, 2013'> }
+{ id: 4, value: 5.01, saved_at: <Date: 'Jan 5, 2013'> }
+```
+
+Then you could prune them with:
+
+```
+sparse_samples = Sample.sparse(:saved_at)
+
+sparse_samples.prune_left(:value)
+# => [
+#   { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+#   { id: 3, value: 5.02, saved_at: <Date: 'Jan 4, 2013'> }
+#   { id: 4, value: 5.00, saved_at: <Date: 'Jan 5, 2013'> }
+# ]
+
+sparse_samples.prune_left(:value, 0.5)
+# => [
+#   { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+# ]
+
+sparse_samples.prune_left(:value, 0.1)
+# => [
+#   { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+#   { id: 3, value: 5.02, saved_at: <Date: 'Jan 4, 2013'> }
+# ]
+```
+
+The methods take the field to prune by, and an optional numeric delta to help with working with float values:
+
+```
+prune_left(symbol)
+prune_left(symbol, numeric)
+
+prune_middle(symbol)
+prune_middle(symbol, numeric)
+
+prune_right(symbol)
+prune_right(symbol, numeric)
+```
+
+Note that `prune_left` will never destroy the oldest record, `prune_middle` is the safest pruning option, and `prune_right` will never destroy the newest record. Same terminology as the other sparse operations. 
+
 ### Indexing
 
 Sparse averages and finds depend on ordering by your datetime field. Make sure that it is indexed! You can create a migration to index it with:

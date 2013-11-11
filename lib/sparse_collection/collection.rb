@@ -29,6 +29,8 @@ module SparseCollection
     def average_left(field)
       return nil unless resources.any?
       return resources.first[field] if resources.count == 1
+			
+			self.resources = resources.order("#{attribute} ASC")
       
       total = 0.0
       
@@ -46,6 +48,8 @@ module SparseCollection
       return nil unless resources.any?
       return resources.last[field] if resources.count == 1
       
+			self.resources = resources.order("#{attribute} ASC")
+			
       total = 0.0
       
       first = resources.first
@@ -62,6 +66,8 @@ module SparseCollection
       return nil unless resources.any?
       return resources.average(field) if resources.count == 1
       
+			self.resources = resources.order("#{attribute} ASC")
+			
       total = 0.0
       
       total += each_pair do |left, right, sub_period|
@@ -115,6 +121,8 @@ module SparseCollection
 		def prune_left(field, delta = nil)
 			return resources if resources.count < 2
 			
+			self.resources = resources.order("#{attribute} ASC")
+			
 			resources.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
@@ -122,13 +130,17 @@ module SparseCollection
 		def prune_middle(field, delta = nil)
 			return resources if resources.count < 3
 			
+			self.resources = resources.order("#{attribute} ASC")
+			
 			resources.each_cons(3, &prune_proc(field, delta))
 			resources.reload
 		end
 		
 		def prune_right(field, delta = nil)
 			return resources if resources.count < 2
-						
+			
+			self.resources = resources.order("#{attribute} ASC")
+			
 			resources.reverse_each.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
