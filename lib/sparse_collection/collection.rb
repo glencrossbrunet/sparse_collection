@@ -115,45 +115,39 @@ module SparseCollection
 		def prune_left(field, delta = nil)
 			return resources if resources.count < 2
 			
-			precedent = nil
-			resources.each_cons(2) do |left, right|
-				precedent = left if left.persisted?
-				records = [ precedent, right ]
-				right.destroy if records_redundant? records, field, delta
-			end
+			resources.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
 		
 		def prune_middle(field, delta = nil)
 			return resources if resources.count < 3
 			
-			precedent = nil
-			resources.each_cons(3) do |left, middle, right|
-				precedent = left if left.persisted?
-				records = [ precedent, middle, right ]
-				middle.destroy if records_redundant? records, field, delta
-			end
+			resources.each_cons(3, &prune_proc(field, delta))
 			resources.reload
 		end
 		
 		def prune_right(field, delta = nil)
 			return resources if resources.count < 2
-			
-			precedent = nil
-			resources.reverse_each.each_cons(2) do |right, left|
-				precedent = right if right.persisted?
-				records = [ precedent, left ]
-				left.destroy if records_redundant? records, field, delta
-			end
+						
+			resources.reverse_each.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
 		
-		def records_redundant?(records, field, delta = nil)
+		def prune_proc(field, delta)
+			true_precedent = nil
+			proc do |precedent, record, *rest|
+				true_precedent = precedent if precedent.persisted?
+				records = [ true_precedent, record, *rest ]
+				record.destroy if records_redundant? records, field, delta
+			end
+		end
+		
+		def records_redundant?(records, field, delta)
 			values = records.map{ |record| record[field] }
 			values_redundant? values, delta
 		end
 		
-		def values_redundant?(values, delta = nil)
+		def values_redundant?(values, delta)
 			values.combination(2).all? do |a, b|
 				if delta.nil? then a == b else (a - b).abs <= delta end
 			end
