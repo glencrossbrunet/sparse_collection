@@ -40,13 +40,13 @@ Then you could average them with:
 sparse_collection = Sample.sparse(:saved_at)
 
 sparse_collection.average_left(:value)
-# => 6.25   # ( (3 * 5.0) + (1 * 10.0) ) / 4
+# => 6.25    # ( (3 * 5.0) + (1 * 10.0) ) / 4
 
 sparse_collection.average_middle(:value)
-# => 8.75   # ( (1.5 * 5.0) + (1.5 * 10.0) + (0.5 * 10.0) + (0.5 * 15.0) ) / 4
+# => 8.75    # ( (1.5 * 5.0) + (1.5 * 10.0) + (0.5 * 10.0) + (0.5 * 15.0) ) / 4
 
 sparse_collection.average_right(:value)
-# => 11.25  # ( (3 * 10.0) + (1 * 15.0) ) / 4
+# => 11.25   # ( (3 * 10.0) + (1 * 15.0) ) / 4
 ```
 
 Now suppose you want the average to go past the last record:
@@ -54,7 +54,7 @@ Now suppose you want the average to go past the last record:
 ```
 end_date = Date.parse('Jan 7, 2013)
 sparse_collection.ending(end_date).average_left(:value)
-# => 8.0    # ( (3 * 5.0) + (1 * 10.0) + (1 * 15.0) ) / 5
+# => 8.0     # ( (3 * 5.0) + (1 * 10.0) + (1 * 15.0) ) / 5
 ```
 
 Or suppose you want the average to start before the first record:
@@ -62,7 +62,7 @@ Or suppose you want the average to start before the first record:
 ```
 start_date = Date.parse('Jan 1, 2013')
 sparse_collection.starting(start_date).average_right(:value)
-# => 10.0  # ( (1 * 5.0) + (3 * 10.0) + (1 * 15.0) ) / 5
+# => 10.0   # ( (1 * 5.0) + (3 * 10.0) + (1 * 15.0) ) / 5
 ```
 
 ### Finding Records
