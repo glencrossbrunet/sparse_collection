@@ -113,12 +113,12 @@ sparse_samples.prune_left(:value)
 #   { id: 4, value: 5.00, saved_at: <Date: 'Jan 5, 2013'> }
 # ]
 
-sparse_samples.prune_left(:value, 0.5)
+sparse_samples.prune_left(value: 0.5)
 # => [
 #   { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
 # ]
 
-sparse_samples.prune_left(:value, 0.1)
+sparse_samples.prune_left(value: 0.1)
 # => [
 #   { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
 #   { id: 3, value: 5.02, saved_at: <Date: 'Jan 4, 2013'> }
@@ -129,13 +129,13 @@ The methods take the field to prune by, and an optional numeric delta to help wi
 
 ```
 prune_left(symbol)
-prune_left(symbol, numeric)
+prune_left(hash)
 
 prune_middle(symbol)
-prune_middle(symbol, numeric)
+prune_middle(hash)
 
 prune_right(symbol)
-prune_right(symbol, numeric)
+prune_right(hash)
 ```
 
 Note that `prune_left` will never destroy the oldest record, `prune_middle` is the safest pruning option, and `prune_right` will never destroy the newest record. Same terminology as the other sparse operations. 

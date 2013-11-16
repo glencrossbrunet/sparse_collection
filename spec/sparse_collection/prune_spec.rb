@@ -33,7 +33,7 @@ describe SparseCollection::Collection do
 		end
 		
 		context 'within delta' do
-			let(:pruned) { sparse.prune_left(:value, 1) }
+			let(:pruned) { sparse.prune_left(value: 1) }
 			
 			it 'should remove 3' do
 				expect(pruned.count).to eq(count - 3)
@@ -57,7 +57,7 @@ describe SparseCollection::Collection do
 		end
 		
 		context 'within delta' do
-			let(:pruned) { sparse.prune_middle(:value, 1) }
+			let(:pruned) { sparse.prune_middle(value: 1) }
 			
 			it 'should remove 1' do
 				expect(pruned.count).to eq(count - 1)
@@ -83,7 +83,7 @@ describe SparseCollection::Collection do
 		end
 		
 		context 'within delta' do
-			let(:pruned) { sparse.prune_right(:value, 1) }
+			let(:pruned) { sparse.prune_right(value: 1) }
 			
 			it 'should remove 3' do
 				expect(pruned.count).to eq(count - 3)

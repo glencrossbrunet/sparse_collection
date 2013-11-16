@@ -112,37 +112,38 @@ module SparseCollection
 		# prune
 		
 		
-		def prune_left(field, delta = nil)
+		def prune_left(field)
 			return resources if resources.count < 2
 						
-			resources.each_cons(2, &prune_proc(field, delta))
+			resources.each_cons(2, &prune_proc(field))
 			resources.reload
 		end
 		
-		def prune_middle(field, delta = nil)
+		def prune_middle(field)
 			return resources if resources.count < 3
 						
-			resources.each_cons(3, &prune_proc(field, delta))
+			resources.each_cons(3, &prune_proc(field))
 			resources.reload
 		end
 		
-		def prune_right(field, delta = nil)
+		def prune_right(field)
 			return resources if resources.count < 2
 						
-			resources.reverse_each.each_cons(2, &prune_proc(field, delta))
+			resources.reverse_each.each_cons(2, &prune_proc(field))
 			resources.reload
 		end
 		
-		def prune_proc(field, delta)
+		def prune_proc(field)
 			true_precedent = nil
 			proc do |precedent, record, *rest|
 				true_precedent = precedent if precedent.persisted?
 				records = [ true_precedent, record, *rest ]
-				record.destroy if records_redundant? records, field, delta
+				record.destroy if records_redundant? records, field
 			end
 		end
 		
-		def records_redundant?(records, field, delta)
+		def records_redundant?(records, field)
+			field, delta = [ *field ].first
 			values = records.map{ |record| record[field] }
 			values_redundant? values, delta
 		end
