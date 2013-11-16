@@ -3,7 +3,7 @@ module SparseCollection
     attr_accessor :resources, :attribute, :period_start, :period_end
     
     def initialize(resources, attribute)
-      self.resources = resources
+      self.resources = resources.order("#{attribute} ASC")
       self.attribute = attribute
       if resources.any?
         starting resources.first[attribute]
@@ -29,9 +29,7 @@ module SparseCollection
     def average_left(field)
       return nil unless resources.any?
       return resources.first[field] if resources.count == 1
-			
-			self.resources = resources.order("#{attribute} ASC")
-      
+			      
       total = 0.0
       
       total += each_pair do |left, right, sub_period|
@@ -47,9 +45,7 @@ module SparseCollection
     def average_right(field)
       return nil unless resources.any?
       return resources.last[field] if resources.count == 1
-      
-			self.resources = resources.order("#{attribute} ASC")
-			
+      			
       total = 0.0
       
       first = resources.first
@@ -65,9 +61,7 @@ module SparseCollection
     def average_middle(field)
       return nil unless resources.any?
       return resources.average(field) if resources.count == 1
-      
-			self.resources = resources.order("#{attribute} ASC")
-			
+      			
       total = 0.0
       
       total += each_pair do |left, right, sub_period|
@@ -99,7 +93,7 @@ module SparseCollection
     def find_left(datetime = nil)
       collection = resources
       collection = collection.where("#{attribute} <= ?", datetime) if datetime
-      collection.order("#{attribute} DESC").limit(1).first
+      collection.reorder("#{attribute} DESC").limit(1).first
     end
     
     def find_middle(datetime)
@@ -120,27 +114,21 @@ module SparseCollection
 		
 		def prune_left(field, delta = nil)
 			return resources if resources.count < 2
-			
-			self.resources = resources.order("#{attribute} ASC")
-			
+						
 			resources.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
 		
 		def prune_middle(field, delta = nil)
 			return resources if resources.count < 3
-			
-			self.resources = resources.order("#{attribute} ASC")
-			
+						
 			resources.each_cons(3, &prune_proc(field, delta))
 			resources.reload
 		end
 		
 		def prune_right(field, delta = nil)
 			return resources if resources.count < 2
-			
-			self.resources = resources.order("#{attribute} ASC")
-			
+						
 			resources.reverse_each.each_cons(2, &prune_proc(field, delta))
 			resources.reload
 		end
