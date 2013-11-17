@@ -3,12 +3,12 @@ require 'bundler/setup'
 require 'active_record'
 require 'sparse_collection'
 
-ActiveRecord::Base.establish_connection adapter: 'sqlite3', 
+ActiveRecord::Base.establish_connection adapter: 'sqlite3',
   database: 'spec/testdb.sqlite'
 
 ActiveRecord::Migration.class_eval do
   drop_table :resources
-  
+
   create_table :resources do |t|
     t.date :recorded_on
     t.datetime :recorded_at
