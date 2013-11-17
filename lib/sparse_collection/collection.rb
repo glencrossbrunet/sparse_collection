@@ -153,6 +153,19 @@ module SparseCollection
 				if delta.nil? then a == b else (a - b).abs <= delta end
 			end
 		end
+		
+		# ensure
+		
+		def ensure_left(resource, field)
+			return resource unless resource.valid?
+			
+			precedent = find_left resource[attribute]
+			if precedent.present? && records_redundant?([ precedent, resource ], field)
+				precedent
+			else
+				resource.save and resource.reload
+			end
+		end
     
   end
 end
