@@ -196,7 +196,6 @@ ensured_sample = sparse_samples.ensure_left(sample, :value)
 ensured_sample.update_attribute(:last_checked_at, DateTime.now)
 ````
 
-
 ### Indexing
 
 Sparse averages and finds depend on ordering by your datetime field. Make sure that it is indexed! You can create a migration to index it with:
