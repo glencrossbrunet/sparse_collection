@@ -160,6 +160,17 @@ module SparseCollection
 			return resource unless resource.valid?
 			
 			precedent = find_left resource[attribute]
+			ensure_record precedent, resource, field
+		end
+		
+		def ensure_right(resource, field)
+			return resource unless resource.valid?
+			
+			precedent = find_right resource[attribute]
+			ensure_record precedent, resource, field
+		end
+		
+		def ensure_record(precedent, resource, field)
 			if precedent.present? && records_redundant?([ precedent, resource ], field)
 				precedent
 			else
