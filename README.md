@@ -140,6 +140,63 @@ prune_right(hash)
 
 Note that `prune_left` will never destroy the oldest record, `prune_middle` is the safest pruning option, and `prune_right` will never destroy the newest record. Same terminology as the other sparse operations. 
 
+### Ensuring Records
+
+I take a reading every 5 minutes. How do I make sure my sparse collection reflects the most recent sample? If you had the following sample:
+
+```
+{ id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+```
+
+When you ensure a new sample, it is only saved if it represents new information. If the sparse value has not changed, the sample is not saved. This only applies to `left` and `right` sparse samples. 
+
+```
+sparse_samples = Sample.sparse(:saved_at)
+
+new_sample = Sample.new(saved_at: Date.parse('Jan 3, 2013'), value: 5.00)
+sparse_samples.ensure_left(new_sample, :value)
+# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+```
+
+Same as with `prune` you may specify a delta when working with floating point values. 
+
+```
+new_sample = Sample.new(saved_at: Date.parse('Jan 3, 2013'), value: 5.03)
+sparse_samples.ensure_left(new_sample, value: 0.1)
+# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+```
+
+New records are saved and returned.
+
+```
+new_sample = Sample.new(saved_at: Date.parse('Jan 3, 2013'), value: 7.30)
+sparse_samples_ensure_left(new_sample, value: 0.5)
+# => { id: 2, value: 7.30, saved_at: <Date: 'Jan 3, 2013'> }
+```
+
+At tip: the `ensure_left` and `ensure_right` methods return false if the record is invalid. This is helpful for using it in controller methods:
+
+```
+# samples controller
+
+def create
+  sample = Sample.new(sample_params)
+  if Sample.sparse(:saved_at).ensure(sample, :value)
+    render status: 200, json: { data: sample.to_json }
+  else
+    render status: 422, json: { errors: sample.errors }
+  end
+end
+```
+
+The `ensure_left` and `ensure_right` methods return the sample `find_left` or `find_right` would return. This is helpful for keeping track of the last time the value was ensured.
+
+```
+ensured_sample = sparse_samples.ensure_left(sample, :value)
+ensured_sample.update_attribute(:last_checked_at, DateTime.now)
+````
+
+
 ### Indexing
 
 Sparse averages and finds depend on ordering by your datetime field. Make sure that it is indexed! You can create a migration to index it with:
