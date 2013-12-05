@@ -1,12 +1,22 @@
 # sparse_collection
 
-One of the things we do at **Glencross Brunet** is monitor energy consumers in real-time. Instead of saving information at a constant sample rate, we only save new records when the values change. This saves space, but means traditional averages aren't applicable. 
+> Sparse Collection is a tool set for dealing with time-sensitive sparse data sets. 
 
-The module uses Riemann sum terminology (`left`, `middle`, `right`) with the sample time as the independent variable. You'll see more clearly with the examples below!
+One of the things we do at **Glencross Brunet** is monitor energy consumers in real-time. Instead of saving information at a constant sample rate, we only save new records when the values change. This saves database space, but comes with baggage, for example traditional averages aren't applicable.
+
+The module uses Riemann sum terminology (`left`, `middle`, `right`) to specify precedence for the sample time independent variable. Tons of examples below!
 
 ### How To Use
 
-Include the code in your project, and then extend the module in your activerecord model.
+Include the gem in your Gemfile. Remember to use `Bundler.setup` if you're not using Rails. 
+
+```
+# Gemfile
+
+gem 'sparse_collection', github: 'glencrossbrunet/sparse_collection'
+```
+
+Extend the activerecord model(s) you'd like to have sparse capabilities. Collections will a `sparse` method. 
 
 ```ruby
 class Model < ActiveRecord::Base
@@ -14,13 +24,42 @@ class Model < ActiveRecord::Base
 end
 ```
 
-And then specify which field you want to do a sparse method on for a collection. You don't need a where clause at all, it's just an example:
+Specify which field the collection is time-sensitive for sparse methods. `:created_at` is the default:
 
 ```
-sparse_collection = Model.where({ conditions: 'here' }).sparse(:created_at)
+sparse_collection = Model.sparse
+
+# or with preconditions and specific field
+
+sparse_models = Model.where({ conditions: 'here' }).sparse(:updated_at)
 ```
 
 With the sparse collection you can find records and do correct averages (show below).
+
+### Finding Records
+
+What was the value at (insert time)? If you had the following Sample records:
+
+```
+{ id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+{ id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
+```
+
+Then you could find them with:
+
+```
+jan_3_2013 = Date.parse('Jan 3, 2013')
+sparse_samples = Sample.sparse(:saved_at)
+
+sparse_samples.find_left(jan_3_2013)
+# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+
+sparse_samples.find_middle(jan_3_2013)
+# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
+
+sparse_samples.find_right(jan_3_2013)
+# => { id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
+```
 
 ### Averages
 
@@ -61,38 +100,13 @@ Or suppose you want the average to start before the first record:
 
 ```
 start_date = Date.parse('Jan 1, 2013')
-sparse_collection.starting(start_date).average_right(:value)
+sparse_collection.beginning(start_date).average_right(:value)
 # => 10.0   # ( (1 * 5.0) + (3 * 10.0) + (1 * 15.0) ) / 5
-```
-
-### Finding Records
-
-What was the value at (insert time)? If you had the following Sample records:
-
-```
-{ id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
-{ id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
-```
-
-Then you could find them with:
-
-```
-jan_3_2013 = Date.parse('Jan 3, 2013')
-sparse_samples = Sample.sparse(:saved_at)
-
-sparse_samples.find_left(jan_3_2013)
-# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
-
-sparse_samples.find_middle(jan_3_2013)
-# => { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
-
-sparse_samples.find_right(jan_3_2013)
-# => { id: 2, value: 10.0, saved_at: <Date: 'Jan 5, 2013'> }
 ```
 
 ### Pruning Redundant Records
 
-There's a bunch of redundant records in the database. How can I permanently delete them? If you had the following Sample records:
+I just found out about this gem, and there's already a bunch of redundant records in the database. How can I permanently delete them? If you had the following Sample records:
 
 ```
 { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
@@ -125,20 +139,7 @@ sparse_samples.prune_left(value: 0.1)
 # ]
 ```
 
-The methods take the field to prune by, and an optional numeric delta to help with working with float values:
-
-```
-prune_left(symbol)
-prune_left(hash)
-
-prune_middle(symbol)
-prune_middle(hash)
-
-prune_right(symbol)
-prune_right(hash)
-```
-
-Note that `prune_left` will never destroy the oldest record, `prune_middle` is the safest pruning option, and `prune_right` will never destroy the newest record. Same terminology as the other sparse operations. 
+The methods take the field to prune by, and an optional numeric delta to help determine if float values are redundant. Note that `prune_left` will never destroy the oldest record, `prune_middle` is the safest pruning option, and `prune_right` will never destroy the newest record. 
 
 ### Ensuring Records
 
@@ -148,7 +149,7 @@ I take a reading every 5 minutes. How do I make sure my sparse collection reflec
 { id: 1, value: 5.00, saved_at: <Date: 'Jan 2, 2013'> }
 ```
 
-When you ensure a new sample, it is only saved if it represents new information. If the sparse value has not changed, the sample is not saved. This only applies to `left` and `right` sparse samples. 
+When you ensure a new sample, it is only saved if it represents new information. If the sparse value has not changed, the sample is not saved. This only applies to `left` and `right` precedences. 
 
 ```
 sparse_samples = Sample.sparse(:saved_at)
@@ -198,7 +199,7 @@ ensured_sample.update_attribute(:last_checked_at, DateTime.now)
 
 ### Indexing
 
-Sparse averages and finds depend on ordering by your datetime field. Make sure that it is indexed! You can create a migration to index it with:
+Sparse methods depend on ordering by your time-sensitive field. Make sure that it is indexed! You can create a migration to index it with:
 
 ```
 $ rails g migration add_index_to_tablename_fieldname
@@ -220,4 +221,4 @@ MIT
 
 ---
 
-AJ Ostrow, October 2013
+AJ Ostrow, December 2013

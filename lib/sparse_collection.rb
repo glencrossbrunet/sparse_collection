@@ -1,11 +1,21 @@
-require 'sparse_collection/version'
-require 'sparse_collection/collection'
+require 'sparse_collection/core_ext/range'
+%w(version base find durations averages intervals ensure prune).each do |f|
+  require "sparse_collection/#{f}"
+end 
 
 module SparseCollection
-  attr_accessor :sparse_attribute
-
-  def sparse(attribute = :created_at)
-    resources = where.not(attribute => nil).order("#{attribute} ASC")
-    ::SparseCollection::Collection.new resources, attribute
+  
+  def sparse(field = :created_at)
+    ::SparseCollection::Base.new self, field
   end
+  
+  class Base
+    include Find
+    include Durations
+    include Averages
+    include Intervals
+    include Ensure
+    include Prune
+  end
+  
 end

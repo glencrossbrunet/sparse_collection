@@ -1,9 +1,8 @@
-require 'spec_helper'
-
-describe SparseCollection::Collection do
+describe SparseCollection::Prune do
+  after { Resource.delete_all }
+  
   let(:resources) do
-    Resource.delete_all
-    resources = [
+    Resource.create [
       { recorded_on: Date.parse('Jan 1, 2013'), value: 4 },
       { recorded_on: Date.parse('Jan 2, 2013'), value: 4 },
       { recorded_on: Date.parse('Jan 3, 2013'), value: 5 },
@@ -11,18 +10,17 @@ describe SparseCollection::Collection do
       { recorded_on: Date.parse('Jan 5, 2013'), value: 5 },
       { recorded_on: Date.parse('Jan 6, 2013'), value: 4 },
       { recorded_on: Date.parse('Jan 7, 2013'), value: 3 }
-    ].each { |attributes| Resource.create attributes }
+    ]
     Resource.all
   end
-
   let(:count) { resources.count }
   before { count }
   let(:sparse) { resources.sparse(:recorded_on) }
 
   describe '#prune_left' do
-    context 'exact match' do
+    context 'exact' do
       let(:pruned) { sparse.prune_left(:value) }
-
+      
       it 'should remove 1' do
         expect(pruned.count).to eq(count - 1)
       end
@@ -31,8 +29,8 @@ describe SparseCollection::Collection do
         expect(pruned.find_by recorded_on: Date.parse('Jan 2, 2013')).to be_nil
       end
     end
-
-    context 'within delta' do
+    
+    context 'close' do
       let(:pruned) { sparse.prune_left(value: 1) }
 
       it 'should remove 3' do
@@ -48,7 +46,7 @@ describe SparseCollection::Collection do
   end
 
   describe '#prune_middle' do
-    context 'exact match' do
+    context 'exact' do
       let(:pruned) { sparse.prune_middle(:value) }
 
       it 'should remove 0' do
@@ -56,7 +54,7 @@ describe SparseCollection::Collection do
       end
     end
 
-    context 'within delta' do
+    context 'close' do
       let(:pruned) { sparse.prune_middle(value: 1) }
 
       it 'should remove 1' do
@@ -70,7 +68,7 @@ describe SparseCollection::Collection do
   end
 
   describe '#prune_right' do
-    context 'exact match' do
+    context 'exact' do
       let(:pruned) { sparse.prune_right(:value) }
 
       it 'should remove 1' do
@@ -82,7 +80,7 @@ describe SparseCollection::Collection do
       end
     end
 
-    context 'within delta' do
+    context 'close' do
       let(:pruned) { sparse.prune_right(value: 1) }
 
       it 'should remove 3' do
@@ -96,6 +94,4 @@ describe SparseCollection::Collection do
       end
     end
   end
-
-
 end

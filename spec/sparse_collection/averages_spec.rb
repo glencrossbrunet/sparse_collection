@@ -1,46 +1,41 @@
-require 'spec_helper'
-
-describe 'Collection#average' do
+describe SparseCollection::Averages do
+  after { Resource.delete_all }
+  
   let(:resources) do
-    resources = [
+    Resource.create([
       { recorded_on: Date.parse('Jan 2, 2013'), recorded_at: DateTime.new(2013, 1, 1, 2), value: 0 },
       # 1 day / hour gap
       { recorded_on: Date.parse('Jan 3, 2013'), recorded_at: DateTime.new(2013, 1, 1, 3), value: 5 },
       # 2 day / hour gap
       { recorded_on: Date.parse('Jan 5, 2013'), recorded_at: DateTime.new(2013, 1, 1, 5), value: 10 }
-    ].map { |attributes| Resource.create(attributes) }
-    Resource.where(id: resources.map(&:id))
-  end
-
-  let(:delta) do
-    0.00000001
+    ])
+    Resource.all
   end
 
   context 'date' do
-    let(:sparse) do
-      resources.sparse(:recorded_on)
-    end
+    let(:sparse) { resources.sparse(:recorded_on) }
 
-    describe '_left' do
+    describe '#average_left' do
       subject { sparse.average_left(:value) }
       sum = (1 * 0) + (2 * 5) + (0 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe '_middle' do
+    describe '#average_middle' do
       subject { sparse.average_middle(:value) }
       sum = (0.5 * 0) + (0.5 * 5) + (1 * 5) + (1 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe '_right' do
+    describe '#average_right' do
       subject { sparse.average_right(:value) }
       sum = (0 * 0) + (1 * 5) + (2 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe 'over 0 length range' do
-      let(:sparse) { resources.where(recorded_on: Date.parse('Jan 3, 2013')).sparse(:recorded_on) }
+    describe '0 range' do
+      let(:date) { Date.parse('Jan 3, 2013') }
+      before { sparse.for(date..date) }
       [ :left, :right, :middle ].each do |type|
         specify "#average_#{type}" do
           expect(sparse.send("average_#{type}", :value)).to be_within(delta).of(5.0)
@@ -50,39 +45,55 @@ describe 'Collection#average' do
   end
 
   context 'datetime' do
-    let(:sparse) do
-      resources.sparse(:recorded_at)
-    end
+    let(:sparse) { resources.sparse(:recorded_at) }
 
-    describe '_left' do
+    describe '#average_left' do
       subject { sparse.average_left(:value) }
       sum = (1 * 0) + (2 * 5) + (0 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe 'ending' do
+    describe '#average_left with ending' do
       subject { sparse.ending(DateTime.new(2013, 1, 1, 6)).average_left(:value) }
       sum = (1 * 0) + (2 * 5) + (1 * 10)
       it { should be_within(delta).of(sum / 4.0) }
     end
 
-    describe '_middle' do
+    describe '#average_middle' do
       subject { sparse.average_middle(:value) }
       sum = (0.5 * 0) + (0.5 * 5) + (1 * 5) + (1 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe '_right' do
+    describe '#average_right' do
       subject { sparse.average_right(:value) }
       sum = (0 * 0) + (1 * 5) + (2 * 10)
       it { should be_within(delta).of(sum / 3.0) }
     end
 
-    describe 'starting' do
-      subject { sparse.starting(DateTime.new(2013, 1, 1, 1)).average_right(:value) }
+    describe '#average_right with beginning' do
+      subject { sparse.beginning(DateTime.new(2013, 1, 1, 1)).average_right(:value) }
       sum = (1 * 0) + (1 * 5) + (2 * 10)
       it { should be_within(delta).of(sum / 4.0) }
     end
   end
-
+  
+  context 'multiple attributes' do
+    let(:sparse) { resources.sparse(:recorded_on) }
+    
+    specify '#averages_left' do
+      avgs = sparse.averages_left(:value, :val)
+      expect(avgs[:value]).to eq(avgs[:val])
+    end
+    
+    specify '#averages_middle' do
+      avgs = sparse.averages_middle(:value, :val)
+      expect(avgs[:value]).to eq(avgs[:value])
+    end
+    
+    specify '#averages_right' do
+      avgs = sparse.averages_right(:value, :val)
+      expect(avgs[:value]).to eq(avgs[:value])
+    end
+  end
 end
