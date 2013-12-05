@@ -1,4 +1,4 @@
-# sparse_collection
+# sparse_collection ![Build Status](https://travis-ci.org/glencrossbrunet/sparse_collection.png?branch=master)
 
 > Sparse Collection is a tool set for dealing with time-sensitive sparse data sets. 
 
