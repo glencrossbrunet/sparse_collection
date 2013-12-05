@@ -7,9 +7,7 @@ ActiveRecord::Base.establish_connection adapter: 'sqlite3',
   database: 'spec/testdb.sqlite'
 
 ActiveRecord::Migration.class_eval do
-  drop_table :resources
-
-  create_table :resources do |t|
+  create_table :resources, force: true do |t|
     t.date :recorded_on
     t.datetime :recorded_at
     t.integer :value
