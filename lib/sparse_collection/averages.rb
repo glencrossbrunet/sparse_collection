@@ -8,7 +8,7 @@ module SparseCollection
       
       define_method "average_#{precedent}" do |attribute|
         average attribute, &method("durations_#{precedent}")
-      end      
+      end
     end
     
     private

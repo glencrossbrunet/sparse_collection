@@ -66,13 +66,5 @@ module SparseCollection
       (later.to_time - earlier.to_time).to_f
     end
     
-    def records_redundant?(records, attribute)
-      attribute, delta = [ *attribute ].first
-      values = records.map{ |record| record.send(attribute) }
-      values.combination(2).all? do |a, b|
-        if delta.nil? then a == b else (a - b).abs <= delta end
-      end
-    end
-    
   end
 end

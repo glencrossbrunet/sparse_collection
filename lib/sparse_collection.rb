@@ -1,7 +1,7 @@
 require 'sparse_collection/core_ext/range'
-%w(version base find durations averages intervals ensure prune).each do |f|
-  require "sparse_collection/#{f}"
-end 
+Dir.chdir(File.dirname __FILE__) do
+  Dir.glob('sparse_collection/*.rb'){ |f| require f }
+end
 
 module SparseCollection
   
@@ -14,6 +14,7 @@ module SparseCollection
     include Durations
     include Averages
     include Intervals
+    include Redundance
     include Ensure
     include Prune
   end
