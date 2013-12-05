@@ -13,7 +13,7 @@ module SparseCollection
       values = []
       period.step_with_duration(interval) do |time|
         record = yield time
-        hash = HashWithIndifferentAccess.new record.attributes
+        hash = HashWithIndifferentAccess.new record.try(:attributes)
         values << hash.merge(field => time)
       end
       values
