@@ -36,6 +36,35 @@ describe SparseCollection::Intervals do
           ])
         end
       end
+      
+      describe 'failing case' do
+        before do
+          Resource.create([
+            { recorded_at: DateTime.parse('Jan 10, 2013 10:00'), value: 0 },
+            { recorded_at: DateTime.parse('Jan 11, 2013 02:30'), value: 1 },
+            { recorded_at: DateTime.parse('Jan 11, 2013 06:00'), value: 2 }
+          ])
+        end
+        let(:date) { Date.parse('Jan 11, 2013') }
+        let(:start) { date.to_datetime.beginning_of_day }
+        let(:stop) { date.to_datetime.end_of_day }
+        let(:sparse) { resources.sparse(:recorded_at) }
+        let(:intervals) { sparse.for(start .. stop).intervals_left(1.hour) }
+        subject { intervals.map { |h| h.slice(:value).symbolize_keys } }
+      
+        it do
+          should eq([
+            { value: 0 }, { value: 0 }, { value: 0 },
+            { value: 1 }, { value: 1 }, { value: 1 },
+            { value: 2 }, { value: 2 }, { value: 2 },
+            { value: 2 }, { value: 2 }, { value: 2 },
+            { value: 2 }, { value: 2 }, { value: 2 },
+            { value: 2 }, { value: 2 }, { value: 2 },
+            { value: 2 }, { value: 2 }, { value: 2 },
+            { value: 2 }, { value: 2 }, { value: 2 }
+          ])
+        end
+      end
     end
   end
   

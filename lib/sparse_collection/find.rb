@@ -2,7 +2,7 @@ module SparseCollection
   module Find
     
     def find_left(datetime = nil)
-      collection = records
+      collection = model
       collection = collection.where("#{field} <= ?", datetime) unless datetime.nil?
       collection.reorder("#{field} DESC").limit(1).first
     end
@@ -14,7 +14,7 @@ module SparseCollection
     end
     
     def find_right(datetime = nil)
-      collection = records
+      collection = model
       collection = records.where("#{field} >= ?", datetime) unless datetime.nil?
       collection.limit(1).first
     end

@@ -6,7 +6,7 @@ module SparseCollection
       return seconds unless records.any?
       
       if period_begin < first.send(field)
-        left = model.sparse(field).find_left period_begin
+        left = find_left period_begin
         seconds[left] = seconds_between period_begin, first.send(field) unless left.nil?        
       end
       
@@ -44,7 +44,7 @@ module SparseCollection
       end
       
       if last.send(field) < period_end
-        right = model.sparse(field).find_right period_end
+        right = find_right period_end
         seconds[right] = seconds_between last.send(field), period_end unless right.nil?
       end
       seconds
